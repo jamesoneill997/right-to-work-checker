@@ -88,6 +88,7 @@ class RightToWork:
             dates = self.format_dates_from_details(details)
             conditions = self.driver.find_element(By.XPATH, '//*[@id="gov-grid-row-content"]/div/form/div/div[1]/div[2]/div[2]/p[3]').text
             result = {
+                "outcome": self.STATUS_ACCEPTED,
                 "title":title,
                 "name": name,
                 "details": details,
