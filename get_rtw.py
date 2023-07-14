@@ -25,7 +25,7 @@ class RightToWork:
             self.company_name = company_name
         self.chromedriver_path = os.environ.get("CHROMEDRIVER_PATH") if "CHROMEDRIVER_PATH" in os.environ else "./chromedriver"
         self.chrome_options = Options()
-        self.chrome_options.add_argument('--headless')
+        # self.chrome_options.add_argument('--headless')
         self.chrome_options.add_argument("--disable-dev-shm-usage") #disable shared memory on Heroku
         self.chrome_options.add_argument("--no-sandbox")
         if "GOOGLE_CHROME_BIN" in os.environ:
@@ -86,14 +86,20 @@ class RightToWork:
             name = self.driver.find_element(By.XPATH, '//*[@id="gov-grid-row-content"]/div/form/div/div[1]/div[2]/div[2]/h2').text
             details = self.driver.find_element(By.XPATH, '//*[@id="gov-grid-row-content"]/div/form/div/div[1]/div[2]/div[2]/p[1]').text
             dates = self.format_dates_from_details(details)
+            if len(dates) == 1:
+                start_date = "N/A"
+                expiry_date = dates[0]
+            else:
+                start_date = dates[0]
+                expiry_date = dates[1]
             conditions = self.driver.find_element(By.XPATH, '//*[@id="gov-grid-row-content"]/div/form/div/div[1]/div[2]/div[2]/p[3]').text
             result = {
                 "outcome": self.STATUS_ACCEPTED,
                 "title":title,
                 "name": name,
                 "details": details,
-                "start_date":dates[0],
-                "expiry_date":dates[1],
+                "start_date":start_date,
+                "expiry_date":expiry_date,
                 "conditions":conditions,
             }
             return result
