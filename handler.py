@@ -9,6 +9,14 @@ class RightToWorkHandler(Resource):
     def get(self):
         share_code = request.args.get('code')
         dob = request.args.get('dob')
+        if not share_code or not dob:
+            http_code = 400
+            response = {
+                "code": http_code,
+                "status": "error",
+                "error": "Missing required parameters", 
+            }
+            return make_response(jsonify(response), http_code)
         try:
             rtw = RightToWork(share_code, dob)
             http_code = 200
