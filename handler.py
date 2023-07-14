@@ -26,7 +26,8 @@ class RightToWorkHandler(Resource):
                 "error": None,
             }
             return make_response(jsonify(response), http_code)
-        except:
+        except Exception as e:
+            print(e)
             http_code = 500
             response = {
                 "code": http_code,

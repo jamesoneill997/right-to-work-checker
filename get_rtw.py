@@ -4,22 +4,32 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import (
+    NoSuchElementException, TimeoutException
+)
+from datetime import datetime
+
 import os
+import re
 
 class RightToWork:
     STATUS_ACCEPTED = 0
     STATUS_REJECTED = 1
     STATUS_NOT_FOUND = 2
-    def __init__(self, share_code, dob):
+    def __init__(self, share_code, dob, company_name=None):
         self.share_code = share_code
         self.dob = self.get_dob(dob)
-        self.chromedriver_path = os.environ.get("CHROMEDRIVER_PATH")
-        
+        if not company_name:
+            self.company_name = os.environ.get("COMPANY_NAME") if "COMPANY_NAME" in os.environ else "Unknown"
+        else:
+            self.company_name = company_name
+        self.chromedriver_path = os.environ.get("CHROMEDRIVER_PATH") if "CHROMEDRIVER_PATH" in os.environ else "./chromedriver"
         self.chrome_options = Options()
-        self.chrome_options.add_argument('--headless')
+        # self.chrome_options.add_argument('--headless')
         self.chrome_options.add_argument("--disable-dev-shm-usage") #disable shared memory on Heroku
         self.chrome_options.add_argument("--no-sandbox")
-        self.chrome_options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
+        if "GOOGLE_CHROME_BIN" in os.environ:
+            self.chrome_options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
 
         self.driver = webdriver.Chrome(service=Service(self.chromedriver_path), options=self.chrome_options)
         self.status = self.get_rtw_status()
@@ -31,6 +41,12 @@ class RightToWork:
             "year": dob.split('-')[2]
         }
         return dob_formatted
+    
+    def format_dates_from_details(self, text):
+        date_pattern = r"(\d{1,2} \w+ \d{4})" 
+        dates = re.findall(date_pattern, text)  
+        formatted_dates = [datetime.strptime(date, "%d %B %Y").strftime("%d/%m/%Y") for date in dates]
+        return formatted_dates
         
     def get_rtw_status(self):
         # Open the URL
@@ -57,8 +73,28 @@ class RightToWork:
 
         submit_button = self.driver.find_element(By.ID, 'submit')
         submit_button.click()
-
-        WebDriverWait(self.driver, 10).until(EC.presence_of_element_located((By.ID, "kc-container")))
+        try:
+            WebDriverWait(self.driver, 2).until(EC.text_to_be_present_in_element((By.CLASS_NAME, "govuk-heading-xl"), "Details"))
+            result = self.driver.find_element(By.XPATH, "//*[@id=\"main-content\"]/div/div[1]/h1")
+        except TimeoutException as e: #share code found
+            company_name_input = self.driver.find_element(By.ID, "checkerName")
+            company_name_input.send_keys(self.company_name)
+            submit_button = self.driver.find_element(By.XPATH, '//*[@id="gov-grid-row-content"]/div/form/input[1]')
+            submit_button.click()
+            WebDriverWait(self.driver, 10).until(EC.presence_of_element_located((By.ID, "profileImage")))
+            title = self.driver.find_element(By.XPATH, '//*[@id="gov-grid-row-content"]/div/form/div/div[1]/div[1]/h1').text
+            name = self.driver.find_element(By.XPATH, '//*[@id="gov-grid-row-content"]/div/form/div/div[1]/div[2]/div[2]/h2').text
+            details = self.driver.find_element(By.XPATH, '//*[@id="gov-grid-row-content"]/div/form/div/div[1]/div[2]/div[2]/p[1]').text
+            dates = self.format_dates_from_details(details)
+            conditions = self.driver.find_element(By.XPATH, '//*[@id="gov-grid-row-content"]/div/form/div/div[1]/div[2]/div[2]/p[3]').text
+            result = {
+                "title":title,
+                "name": name,
+                "details": details,
+                "start_date":dates[0],
+                "expiry_date":dates[1],
+                "conditions":conditions,
+            }
+            return result
         
-        result = self.driver.find_element(By.XPATH, '//*[@id="main-content"]/div/div[1]/h1')
         return result.text
