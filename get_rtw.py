@@ -25,7 +25,7 @@ class RightToWork:
             self.company_name = company_name
         self.chromedriver_path = os.environ.get("CHROMEDRIVER_PATH") if "CHROMEDRIVER_PATH" in os.environ else "./chromedriver"
         self.chrome_options = Options()
-        # self.chrome_options.add_argument('--headless')
+        self.chrome_options.add_argument('--headless')
         self.chrome_options.add_argument("--disable-dev-shm-usage") #disable shared memory on Heroku
         self.chrome_options.add_argument("--no-sandbox")
         if "GOOGLE_CHROME_BIN" in os.environ:
