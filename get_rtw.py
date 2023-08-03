@@ -77,7 +77,8 @@ class RightToWork:
         try:
             WebDriverWait(self.driver, 2).until(EC.text_to_be_present_in_element((By.CLASS_NAME, "govuk-heading-xl"), "Details"))
             result = self.driver.find_element(By.XPATH, "//*[@id=\"main-content\"]/div/div[1]/h1")
-        except TimeoutException as e: #share code found
+                
+        except TimeoutException: #share code found
             company_name_input = self.driver.find_element(By.ID, "checkerName")
             company_name_input.send_keys(self.company_name)
             submit_button = self.driver.find_element(By.XPATH, '//*[@id="gov-grid-row-content"]/div/form/input[1]')

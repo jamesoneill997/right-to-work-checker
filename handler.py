@@ -19,7 +19,7 @@ class RightToWorkHandler(Resource):
             return make_response(jsonify(response), http_code)
         try:
             rtw = RightToWork(share_code, dob)
-            http_code = 200
+            http_code = 404 if "do not match our records" in rtw.status else 200
             response = {
                 "code": http_code,
                 "status": rtw.status,
