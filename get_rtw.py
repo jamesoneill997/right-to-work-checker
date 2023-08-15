@@ -100,8 +100,11 @@ class RightToWork:
             else:
                 start_date = dates[0]
                 expiry_date = dates[1]
-                
-            conditions = self.driver.find_element(By.XPATH, '//*[@id="gov-grid-row-content"]/div/form/div/div[1]/div[2]/div[2]/p[3]').text
+            try:
+                conditions = self.driver.find_element(By.XPATH, '//*[@id="gov-grid-row-content"]/div/form/div/div[1]/div[2]/div[2]/p[3]').text
+            except Exception as e:
+                conditions = "N/A"
+
             if self.forename.lower().strip() not in name.lower().strip() or self.surname.lower().strip() not in name.lower().strip():
                 result = {
                     "outcome": self.STATUS_REJECTED,
