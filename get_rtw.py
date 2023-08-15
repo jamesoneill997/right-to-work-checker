@@ -13,12 +13,18 @@ import os
 import re
 
 class RightToWork:
-    STATUS_ACCEPTED = 0
-    STATUS_REJECTED = 1
-    STATUS_NOT_FOUND = 2
-    def __init__(self, share_code, dob, company_name=None):
+    STATUS_ACCEPTED = "ACCEPTED"
+    STATUS_REJECTED = "REJECTED"
+    STATUS_NOT_FOUND = "NOT_FOUND"
+    def __init__(self, share_code, dob, forename, surname, company_name=None):
         self.share_code = share_code
+        self.forename = forename
+        self.surname = surname
         self.dob = self.get_dob(dob)
+        self.rejected_reasons = {
+            "sponsorship": "SPONSORSHIP",
+            "student": "STUDENT",
+        }
         if not company_name:
             self.company_name = os.environ.get("COMPANY_NAME") if "COMPANY_NAME" in os.environ else "Unknown"
         else:
@@ -94,7 +100,33 @@ class RightToWork:
             else:
                 start_date = dates[0]
                 expiry_date = dates[1]
+                
             conditions = self.driver.find_element(By.XPATH, '//*[@id="gov-grid-row-content"]/div/form/div/div[1]/div[2]/div[2]/p[3]').text
+            if self.forename.lower().strip() not in name.lower().strip() or self.surname.lower().strip() not in name.lower().strip():
+                result = {
+                    "outcome": self.STATUS_REJECTED,
+                    "rejected_reason": 'NAME_MISMATCH',
+                    "title":title,
+                    "name": name,
+                    "details": details,
+                    "start_date":start_date,
+                    "expiry_date":expiry_date,
+                    "conditions":conditions,
+                }
+                return result
+            for k, v in self.rejected_reasons.items():
+                if k in conditions.lower():
+                    result = {
+                        "outcome": self.STATUS_REJECTED,
+                        "rejected_reason": v,
+                        "title":title,
+                        "name": name,
+                        "details": details,
+                        "start_date":start_date,
+                        "expiry_date":expiry_date,
+                        "conditions":conditions,
+                    }
+                    return result
             result = {
                 "outcome": self.STATUS_ACCEPTED,
                 "title":title,

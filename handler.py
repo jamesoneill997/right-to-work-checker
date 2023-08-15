@@ -9,6 +9,8 @@ class RightToWorkHandler(Resource):
     def get(self):
         share_code = request.args.get('code')
         dob = request.args.get('dob')
+        forename = request.args.get('forename')
+        surname = request.args.get('surname')
         if not share_code or not dob:
             http_code = 400
             response = {
@@ -18,7 +20,7 @@ class RightToWorkHandler(Resource):
             }
             return make_response(jsonify(response), http_code)
         try:
-            rtw = RightToWork(share_code, dob)
+            rtw = RightToWork(share_code, dob, forename, surname)
             http_code = 404 if "do not match our records" in rtw.status else 200
             response = {
                 "code": http_code,
