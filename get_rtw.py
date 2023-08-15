@@ -96,7 +96,7 @@ class RightToWork:
             details = self.driver.find_element(By.XPATH, '//*[@id="gov-grid-row-content"]/div/form/div/div[1]/div[2]/div[2]/p[1]').text
             dates = self.format_dates_from_details(details)
             if len(dates) == 1:
-                start_date = datetime.today().strftime('%m/%d/%Y')
+                start_date = datetime.today().strftime('%d/%m/%Y')
                 expiry_date = dates[0]
             else:
                 start_date = dates[0]
