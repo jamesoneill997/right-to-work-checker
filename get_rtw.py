@@ -8,6 +8,7 @@ from selenium.common.exceptions import (
     NoSuchElementException, TimeoutException
 )
 from datetime import datetime
+from webdriver_manager.chrome import ChromeDriverManager
 
 import os
 import re
@@ -38,7 +39,7 @@ class RightToWork:
         if "GOOGLE_CHROME_BIN" in os.environ:
             self.chrome_options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
 
-        self.driver = webdriver.Chrome(service=Service(self.chromedriver_path), options=self.chrome_options)
+        self.driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=self.chrome_options)
         self.status = self.get_rtw_status()
         
     def get_dob(self, dob):
@@ -95,7 +96,7 @@ class RightToWork:
             details = self.driver.find_element(By.XPATH, '//*[@id="gov-grid-row-content"]/div/form/div/div[1]/div[2]/div[2]/p[1]').text
             dates = self.format_dates_from_details(details)
             if len(dates) == 1:
-                start_date = datetime.datetime.today().strftime('%m/%d/%Y')
+                start_date = datetime.today().strftime('%m/%d/%Y')
                 expiry_date = dates[0]
             else:
                 start_date = dates[0]
