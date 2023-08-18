@@ -54,6 +54,7 @@ class RightToWork:
         date_pattern = r"(\d{1,2} \w+ \d{4})" 
         dates = re.findall(date_pattern, text)  
         formatted_dates = [datetime.strptime(date, "%d %B %Y").strftime("%d/%m/%Y") for date in dates]
+        print(formatted_dates)
         return formatted_dates
         
     def get_rtw_status(self):
@@ -115,9 +116,12 @@ class RightToWork:
             if len(dates) == 1:
                 start_date = datetime.today().strftime('%d/%m/%Y')
                 expiry_date = dates[0]
-            else:
+            elif len(dates) == 2:
                 start_date = dates[0]
                 expiry_date = dates[1]
+            else:
+                start_date = datetime.today().strftime('%d/%m/%Y')
+                expiry_date = None
             try:
                 conditions = self.driver.find_element(By.XPATH, '//*[@id="gov-grid-row-content"]/div/form/div/div[1]/div[2]/div[2]/p[3]').text
             except Exception as e:
