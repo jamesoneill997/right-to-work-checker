@@ -57,6 +57,12 @@ class RightToWork:
         return formatted_dates
         
     def get_rtw_status(self):
+        if not self.forename or not self.surname or not self.dob or not self.share_code:
+            result = {
+                "outcome": self.STATUS_REJECTED,
+                "rejected_reason": 'MISSING_DETAILS',
+            }
+            return result
         # Open the URL
         url = 'https://right-to-work.service.gov.uk/rtw-view'
         self.driver.get(url)
@@ -90,7 +96,18 @@ class RightToWork:
             company_name_input.send_keys(self.company_name)
             submit_button = self.driver.find_element(By.XPATH, '//*[@id="gov-grid-row-content"]/div/form/input[1]')
             submit_button.click()
-            WebDriverWait(self.driver, 10).until(EC.presence_of_element_located((By.ID, "profileImage")))
+            try:
+                WebDriverWait(self.driver, 6).until(EC.presence_of_element_located((By.ID, "profileImage")))
+                
+            except TimeoutException: #invalid share code
+                page_heading = self.driver.find_element(By.XPATH, '//*[@id="gov-grid-row-content"]/div/form/h1').text
+                if "problem" in page_heading.lower():
+                    result = {
+                        "outcome": self.STATUS_NOT_FOUND,
+                        "rejected_reason": 'SHARE_CODE_ERROR',
+                    }
+                    return result
+
             title = self.driver.find_element(By.XPATH, '//*[@id="gov-grid-row-content"]/div/form/div/div[1]/div[1]/h1').text
             name = self.driver.find_element(By.XPATH, '//*[@id="gov-grid-row-content"]/div/form/div/div[1]/div[2]/div[2]/h2').text
             details = self.driver.find_element(By.XPATH, '//*[@id="gov-grid-row-content"]/div/form/div/div[1]/div[2]/div[2]/p[1]').text
