@@ -103,7 +103,7 @@ class RightToWork:
                 page_heading = self.driver.find_element(By.XPATH, '//*[@id="gov-grid-row-content"]/div/form/h1').text
                 if "problem" in page_heading.lower():
                     result = {
-                        "outcome": self.STATUS_NOT_FOUND,
+                        "outcome": self.STATUS_REJECTED,
                         "rejected_reason": 'SHARE_CODE_ERROR',
                     }
                     return result
