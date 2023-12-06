@@ -23,7 +23,7 @@ class RightToWork:
         self.surname = surname
         self.dob = self.get_dob(dob)
         self.rejected_reasons = {
-            "sponsorship": "SPONSORSHIP",
+            "sponsor": "SPONSORSHIP",
             "student": "STUDENT",
         }
         if not company_name:
