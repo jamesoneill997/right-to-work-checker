@@ -19,8 +19,8 @@ class RightToWork:
     STATUS_NOT_FOUND = "NOT_FOUND"
     def __init__(self, share_code, dob, forename, surname, company_name=None):
         self.share_code = share_code
-        self.forename = forename
-        self.surname = surname
+        self.forename = forename.replace("'", "")
+        self.surname = surname.replace("'", "")
         self.dob = self.get_dob(dob)
         self.rejected_reasons = {
             "sponsor": "SPONSORSHIP",
